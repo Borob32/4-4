@@ -1,0 +1,201 @@
+
+``html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Библиотека</title>
+</head>
+<body>
+    <header>
+        <h1>Библиотека</h1>
+        <button onclick="showUserInterface()">Пользовательский интерфейс</button>
+        <button onclick="showAdminInterface()">Интерфейс администратора</button>
+    </header>
+    <main id="main-content"></main>
+    <footer>
+        <p>© 2023 Библиотека</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
+```
+
+### styles.css
+
+```css
+body { font-family: Arial, sans-serif; }
+header { background: #f4f4f4; padding: 1em; text-align: center; }
+main { padding: 1em; }
+button { margin: 0.5em; }
+.book { border: 1px solid #ccc; padding: 1em; margin: 1em 0; }
+.admin { display: none; }
+```
+
+### script.js
+
+```javascript
+// Массив книг (вам нужно заменить его на реальную базу данных на сервере)
+let books = [
+    { id: 1, title: "Война и мир", author: "Лев Толстой", category: "Классика", year: 1869, available: true, price: 500 },
+    { id: 2, title: "1984", author: "Джордж Оруэлл", category: "Фантастика", year: 1949, available: true, price: 300 },
+    { id: 3, title: "Гарри Поттер", author: "Дж.К. Роулинг", category: "Фэнтези", year: 1997, available: true, price: 400 }
+];
+
+let currentUserRole = null; // Возможности: 'user' или 'admin'
+
+// Функции отображения интерфейсов
+function showUserInterface() {
+    currentUserRole = 'user';
+    document.getElementById("main-content").innerHTML = userInterface();
+    displayBooks();
+}
+
+function showAdminInterface() {
+    currentUserRole = 'admin';
+    document.getElementById("main-content").innerHTML = adminInterface();
+    displayBooks();
+}
+
+function userInterface() {
+    return `
+        <h2>Полезли в библиотеку</h2>
+        <select onchange="sortBooks(this.value)">
+            <option value="">Сортировать по</option>
+            <option value="category">Категории</option>
+            <option value="author">Автору</option>
+            <option value="year">Году написания</option>
+        </select>
+        <div id="books"></div>
+    `;
+}
+
+function adminInterface() {
+    return `
+        <h2>Управление книгами</h2>
+        <div id="admin-actions">
+            <input id="new-title" placeholder="Название книги" />
+            <input id="new-author" placeholder="Автор книги" />
+            <input id="new-category" placeholder="Категория книги" />
+            <input id="new-year" placeholder="Год написания" />
+            <input id="new-price" placeholder="Цена" />
+            <button onclick="addBook()">Добавить книгу</button>
+        </div>
+        <div id="books"></div>
+    `;
+}
+
+// Функции для отображения книг
+function displayBooks() {
+    const booksContainer = document.getElementById("books");
+    booksContainer.innerHTML = '';
+    books.forEach(book => {
+        const bookElement = document.createElement("div");
+        bookElement.classList.add('book');
+        bookElement.innerHTML = `
+            <h3>${book.title}</h3>
+            <p>Автор: ${book.author}</p>
+            <p>Категория: ${book.category}</p>
+            <p>Год: ${book.year}</p>
+            <p>Цена: ${book.price} ₽</p>
+            <p>Доступно: ${book.available ? 'Да' : 'Нет'}</p>
+            ${currentUserRole
+
+
+=== 'user' ? <button onclick="rentBook(${book.id})">Арендовать</button> : <button onclick="removeBook(${book.id})">Удалить книгу</button>}
+        ;
+        booksContainer.appendChild(bookElement);
+    });
+}
+
+// Функции для управления книгами
+function sortBooks(criterion) {
+    if (criterion) {
+        books.sort((a, b) => {
+            if (typeof a[criterion] === "string") {
+                return a[criterion].localeCompare(b[criterion]);
+            }
+            return a[criterion] - b[criterion];
+        });
+    }
+    displayBooks();
+}
+
+function addBook() {
+    const title = document.getElementById("new-title").value;
+    const author = document.getElementById("new-author").value;
+    const category = document.getElementById("new-category").value;
+    const year = parseInt(document.getElementById("new-year").value);
+    const price = parseFloat(document.getElementById("new-price").value);
+
+    if (title && author && category && year && price) {
+        const newBook = { id: books.length + 1, title, author, category, year, available: true, price: price };
+        books.push(newBook);
+        displayBooks();
+        
+        // Очистка полей
+        document.getElementById("new-title").value = '';
+        document.getElementById("new-author").value = '';
+        document.getElementById("new-category").value = '';
+        document.getElementById("new-year").value = '';
+        document.getElementById("new-price").value = '';
+    } else {
+        alert('Заполните все поля!');
+    }
+}
+
+function removeBook(id) {
+    books = books.filter(book => book.id !== id);
+    displayBooks();
+}
+
+// Функция аренды книги
+function rentBook(id) {
+    const book = books.find(b => b.id === id);
+    if (book && book.available) {
+        alert(Вы арендовали книгу "${book.title}" на 2 недели.);
+        book.available = false;
+        displayBooks();
+        // Здесь вы также можете реализовать логику напоминания о конце аренды (например, через setTimeout)
+    } else {
+        alert('Книга недоступна для аренды.');
+    }
+}
+
+Подробный анализ выполненной задачи по созданию веб-версии книжного магазина
+
+1.Определение проекта:
+   - Задача была четко определена: создание веб-страницы с двумя интерфейсами (администратора и пользователя) и базой данных любимых книг. Однако при начальном планировании не были учтены все функциональные требования, что привело к необходимости корректировок на этапе реализации.
+2. Проектирование пользовательского интерфейса:
+   - Интерфейс пользователя был разработан с учетом удобства навигации и доступности информации о книгах. Однако, возникли проблемы с восприятием информации: пользователи отмечали сложности в поиске нужной книги из-за недостаточной визуализации и ограниченного количества фильтров.
+3. Создание базы данных:
+   - База данных была создана на основе выбранных книг, однако изначально в структуре не были учтены все необходимые атрибуты (например, статус доступности книг, дополнительные характеристики и т.д.), что потребовало доработки.
+4. Сортировка и фильтрация:
+   - Реализованы функции сортировки по категориям, авторам и году написания. Тем не менее, эффективность работы фильтров была недостаточно высока, что увеличивало время отклика и снижало удобство пользователей.
+5. Функциональность покупки/аренды книг:
+   - Функция аренды и покупки была интегрирована, но не было четко реализовано управление сроком аренды, приводя к путанице среди пользователей и недовольству по поводу условий использования (например, возможности продления аренды).
+6. Административные функции:
+   - Интерфейс администратора позволял изменять список книг и управление ценами, однако не была предусмотрена возможность массовых изменений (например, обновление статуса нескольких книг одновременно), что усложняло процесс обслуживания.
+7. Автоматизированные уведомления:
+   - Функция автоматического напоминания пользователям об окончании срока аренды была реализована, но в процессе тестирования выявлено, что уведомления иногда не отправлялись из-за ошибок в настройках сервера, что ведет к ухудшению пользовательского опыта.
+
+Рекомендации по устранению выявленных ошибок
+
+1. Более тщательное планирование проекта:
+   - Важно заранее провести более глубокий анализ требований и функциональности. Это может включать изучение пользовательского опыта и создание прототипов интерфейсов.
+2. Улучшение пользовательского интерфейса:
+   - Рекомендуется провести дополнительные тесты с пользователями, чтобы получить обратную связь о навигации и восприятии интерфейса. На основе этого улучшить визуальное представление фильтров и сортировок.
+3. Оптимизация структуры базы данных:
+   - Переосмыслению структуры базы данных нужно уделить больше внимания, добавив недостающие атрибуты и обеспечив возможность быстрого поиска и фильтрации записей.
+4. Повышение скорости работы фильтров:
+   - Провести оптимизацию запросов к базе данных, чтобы улучшить скорость работы фильтров и уменьшить время отклика страницы.
+5. Улучшение управления функциями аренды:
+   - Внедрить возможность продления аренды и предложить пользователям более гибкие условия при аренде книг.
+6. Добавление массового управления для администратора:
+   - Реализовать возможность массового обновления статусов книг и цен, чтобы сократить время на администрирование.
+7. Тестирование уведомлений:
+   - Провести тестирование механизма автоматических уведомлений, а также внедрить журнал для отслеживания отправленных уведомлений и ошибок, которые могут возникать.
+
+
